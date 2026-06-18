@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ViaSapiens — Painel de Matrículas 2026.2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f0f4fa;color:#1e293b}
+.topbar{background:#1a3a6b;color:white;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100}
+.topbar-logo{font-size:18px;font-weight:600}
+.topbar-logo span{color:#60aaff}
+.topbar-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.live-badge{background:#22c55e;color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:10px;display:flex;align-items:center;gap:5px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:white;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.relogio{font-size:12px;color:rgba(255,255,255,.7)}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:16px;color:#64748b}
+.spinner{width:44px;height:44px;border:4px solid #e2e8f0;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.erro{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;padding:20px 24px;border-radius:12px;margin:24px;font-size:14px;line-height:1.7}
+.section{padding:14px 20px 0}
+.slabel{font-size:10px;font-weight:600;color:#1a3a6b;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.slabel::before{content:'';display:inline-block;width:3px;height:14px;background:#2563eb;border-radius:2px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.card{background:white;border-radius:10px;padding:12px 14px;border-left:3px solid #2563eb}
+.card.g{border-left-color:#22c55e}.card.a{border-left-color:#f59e0b}.card.r{border-left-color:#ef4444}.card.p{border-left-color:#8b5cf6}.card.t{border-left-color:#14b8a6}
+.clbl{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.cval{font-size:26px;font-weight:600;color:#1e293b;line-height:1.1}
+.csub{font-size:10px;color:#94a3b8;margin-top:3px}
+.csub.up{color:#22c55e}.csub.dn{color:#ef4444}
+.tcol{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.panel{background:white;border-radius:10px;padding:14px 16px}
+.ptitle{font-size:12px;font-weight:600;color:#1e293b;margin-bottom:10px}
+.chart-wrap{position:relative;width:100%}
+.ri{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:.5px solid #f1f5f9}
+.ri:last-child{border-bottom:none}
+.rpos{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:#e2e8f0;color:#64748b;flex-shrink:0}
+.rpos.g1{background:#fef3c7;color:#b45309}.rpos.g2{background:#f1f5f9;color:#475569}.rpos.g3{background:#fde8d8;color:#9a3412}
+.rname{flex:1;font-size:12px;color:#1e293b;font-weight:500}
+.rbg{flex:1.5;height:6px;background:#e2e8f0;border-radius:3px}
+.rb{height:6px;border-radius:3px;background:#2563eb}
+.rb.g1{background:#f59e0b}.rb.g2{background:#94a3b8}.rb.g3{background:#fb923c}
+.rct{font-size:13px;font-weight:600;color:#1a3a6b;min-width:24px;text-align:right}
+.rpct{font-size:10px;color:#94a3b8;min-width:38px;text-align:right}
+.gauge-bar-wrap{width:100%;background:#e2e8f0;border-radius:10px;height:10px;margin:7px 0;overflow:hidden}
+.gauge-bar{height:100%;border-radius:10px;background:#2563eb}
+.alert-box{background:white;border-radius:10px;padding:10px 14px}
+.ai{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:.5px solid #f1f5f9;font-size:12px;color:#334155;line-height:1.5}
+.ai:last-child{border-bottom:none}
+.adot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.dr{background:#ef4444}.da{background:#f59e0b}.db{background:#22c55e}.dbl{background:#2563eb}
+.cm{width:100%;font-size:11px;border-collapse:collapse}
+.cm th{background:#1a3a6b;color:white;padding:6px 8px;font-weight:600;text-align:center}
+.cm th:first-child{text-align:left}
+.cm td{padding:6px 8px;text-align:center;border-bottom:.5px solid #f1f5f9}
+.cm td:first-child{text-align:left;font-weight:500;color:#334155}
+.hi{background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:2px 6px;font-weight:700}
+.mid{background:#eff6ff;color:#2563eb;border-radius:4px;padding:2px 6px}
+.lo{color:#cbd5e1}
+.filtros{display:flex;flex-wrap:wrap;gap:8px;padding:12px 20px 4px}
+.filtros select{font-size:12px;padding:6px 10px;border-radius:8px;border:.5px solid #cbd5e1;background:white;color:#1e293b;cursor:pointer}
+.btn-att{background:#2563eb;color:white;border:none;padding:7px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:500}
+.btn-att:hover{background:#1d4ed8}
+@media(max-width:600px){.tcol{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-logo">Via<span>Sapiens</span> — Painel de Matrículas</div>
+    <div class="topbar-sub">Campanha 2026.2 · Em Nosso Interior Cabe o Mundo</div>
+  </div>
+  <div class="topbar-right">
+    <div class="relogio" id="relogio"></div>
+    <div class="live-badge"><div class="live-dot"></div><span id="badge-txt">Carregando...</span></div>
+    <button class="btn-att" onclick="carregarDados()">↺ Atualizar</button>
+  </div>
+</div>
+
+<div id="app">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div>Conectando à planilha...</div>
+  </div>
+</div>
+
+<script>
+const URL_SCRIPT = 'https://script.google.com/macros/s/AKfycbxIcvk5LTPZUz7-SsVCu1sr1xbRJzlsLTsSpenv-IDF4xlrcQ7xdoifl2bJEJo4iEXV/exec';
+const META_GERAL = 200;
+const META_INDIVIDUAL = 50;
+
+let todosOsDados = [];
+
+// Relógio
+function tick() {
+  const n = new Date();
+  document.getElementById('relogio').textContent =
+    n.toLocaleDateString('pt-BR') + ' · ' + n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+tick(); setInterval(tick, 30000);
+
+// JSONP — única técnica que funciona sem CORS no Apps Script
+function carregarDados() {
+  document.getElementById('badge-txt').textContent = 'Atualizando...';
+
+  // Remove callback anterior se existir
+  if (window._jsonpCallback) {
+    const old = document.getElementById('jsonp-script');
+    if (old) old.remove();
+  }
+
+  window._jsonpCallback = function(dados) {
+    todosOsDados = dados.filter(function(r) {
+      const dt = r['data/hora'] || '';
+      return dt.toString().trim() !== '' && dt.toString().trim().toLowerCase() !== 'data/hora';
+    });
+    document.getElementById('badge-txt').textContent = todosOsDados.length + ' registros';
+    renderizar(todosOsDados);
+  };
+
+  const script = document.createElement('script');
+  script.id = 'jsonp-script';
+  script.src = URL_SCRIPT + '?callback=_jsonpCallback&t=' + Date.now();
+  script.onerror = function() {
+    document.getElementById('badge-txt').textContent = 'Erro';
+    document.getElementById('app').innerHTML = `
+      <div class="erro">
+        <strong>⚠️ Não foi possível carregar os dados.</strong><br><br>
+        Verifique:<br>
+        1. O Apps Script está publicado como App da Web<br>
+        2. "Quem tem acesso" está como <strong>Qualquer pessoa</strong><br>
+        3. A planilha está compartilhada como <strong>Qualquer pessoa com o link pode visualizar</strong><br><br>
+        Tente clicar em <strong>↺ Atualizar</strong> novamente.
+      </div>`;
+  };
+  document.head.appendChild(script);
+}
+
+function norm(v) { return (v||'').toString().trim(); }
+
+function parseData(v) {
+  const s = norm(v);
+  if (!s) return null;
+  const p = s.split(' ')[0].split('/');
+  if (p.length === 3) return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
+  return null;
+}
+
+function hoje() { const d=new Date(); d.setHours(0,0,0,0); return d; }
+function inicioSemana() { const d=hoje(); const dia=d.getDay(); d.setDate(d.getDate()-(dia===0?6:dia-1)); return d; }
+function inicioMes() { const d=hoje(); d.setDate(1); return d; }
+
+function getConsultor(r) { return norm(r['Consultor Responsável:']||r['Consultor Responsável']||''); }
+function getCursoSimples(r) {
+  const c = norm(r['Curso']);
+  const cl = c.toLowerCase();
+  if (cl.includes('pós')||cl.includes('pos')) return 'Pós-graduação';
+  if (cl.includes('pedagogia')) return 'Pedagogia';
+  if (cl.includes('psicologia')) return 'Psicologia';
+  if (cl.includes('direito')) return 'Direito';
+  if (cl.includes('fisioterapia')) return 'Fisioterapia';
+  if (cl.includes('administra')) return 'Administração';
+  if (cl.includes('secretariado')) return 'Secretariado';
+  if (cl.includes('enfermagem')) return 'Enfermagem';
+  return c || 'Não informado';
+}
+function getTurno(r) { return norm(r['Turno:']||r['Turno']||''); }
+function getFinanciamento(r) { return norm(r['Financiamento:']||r['Financiamento']||''); }
+function getIngresso(r) { return norm(r['Forma de ingresso']||''); }
+function temDocPendente(r) {
+  const d = norm(r['Documentos pendentes:']||r['Documentos pendentes']||'').toLowerCase();
+  const ok = ['todos ok','entregues todos','entregues presencialmente','entregou todos','.','','ok'];
+  return !ok.some(x=>d===x) && d.length > 2;
+}
+function temFies(r) { return getFinanciamento(r).toLowerCase().includes('fies'); }
+function temProuni(r) { const f=getFinanciamento(r).toLowerCase(); return f.includes('prouni')||f.includes('prou'); }
+
+function contarPor(dados, fn) {
+  const acc = {};
+  dados.forEach(r=>{ const k=fn(r)||'Não informado'; acc[k]=(acc[k]||0)+1; });
+  return Object.entries(acc).sort((a,b)=>b[1]-a[1]);
+}
+
+function renderizar(dados) {
+  const h = hoje(), sw = inicioSemana(), sm = inicioMes();
+  const total = dados.length;
+  const deHoje = dados.filter(r=>{const d=parseData(r['data/hora']);return d&&d.getTime()===h.getTime();}).length;
+  const daSemana = dados.filter(r=>{const d=parseData(r['data/hora']);return d&&d>=sw;}).length;
+  const doMes = dados.filter(r=>{const d=parseData(r['data/hora']);return d&&d>=sm;}).length;
+  const comDocs = dados.filter(temDocPendente).length;
+  const comFies = dados.filter(temFies).length;
+  const comProuni = dados.filter(temProuni).length;
+  const consultores = [...new Set(dados.map(getConsultor).filter(Boolean))];
+  const cursos = [...new Set(dados.map(getCursoSimples).filter(Boolean))];
+  const pctMeta = total>0?Math.min(100,Math.round(total/META_GERAL*100)):0;
+
+  // Evolução diária
+  const porDia = {};
+  dados.forEach(r=>{
+    const d=parseData(r['data/hora']);
+    if(d){const k=d.toLocaleDateString('pt-BR');porDia[k]=(porDia[k]||0)+1;}
+  });
+  const diasOrd = Object.keys(porDia).sort((a,b)=>{
+    const pa=a.split('/'),pb=b.split('/');
+    return new Date(pa[2],pa[1]-1,pa[0])-new Date(pb[2],pb[1]-1,pb[0]);
+  });
+  const valDia = diasOrd.map(d=>porDia[d]);
+  const acum = valDia.reduce((acc,v,i)=>{acc.push((acc[i-1]||0)+v);return acc;},[]);
+
+  const rankCons = contarPor(dados, getConsultor);
+  const rankCurso = contarPor(dados, getCursoSimples);
+  const rankIng = contarPor(dados, getIngresso);
+  const rankFin = contarPor(dados, getFinanciamento);
+  const rankTurno = contarPor(dados, getTurno);
+
+  // Heatmap
+  const diaSem = ['Seg','Ter','Qua','Qui','Sex'];
+  const hmData = {};
+  dados.forEach(r=>{
+    const d=parseData(r['data/hora']);
+    if(d){const ds=diaSem[d.getDay()-1];if(ds)hmData[ds]=(hmData[ds]||0)+1;}
+  });
+
+  // Última matrícula por consultor
+  const ultimaM = {};
+  dados.forEach(r=>{
+    const c=getConsultor(r), d=parseData(r['data/hora']);
+    if(c&&d&&(!ultimaM[c]||d>ultimaM[c]))ultimaM[c]=d;
+  });
+
+  // Cross
+  const cross = {};
+  dados.forEach(r=>{
+    const c=getConsultor(r), cur=getCursoSimples(r);
+    if(!cross[c])cross[c]={};
+    cross[c][cur]=(cross[c][cur]||0)+1;
+  });
+  const cursosTop = rankCurso.slice(0,5).map(x=>x[0]);
+
+  // Alertas
+  const alertas = [];
+  Object.entries(ultimaM).forEach(([c,d])=>{
+    const diff=Math.floor((h-d)/(1000*60*60*24));
+    if(diff>3)alertas.push({t:'r',m:`<strong>${c}</strong> sem matrícula há ${diff} dias (último: ${d.toLocaleDateString('pt-BR')}). Verificar pipeline.`});
+  });
+  if(total>0&&comDocs/total>0.3)alertas.push({t:'r',m:`<strong>Pendências documentais em ${Math.round(comDocs/total*100)}%:</strong> ${comDocs} alunos com documentos incompletos.`});
+  if(comFies>0)alertas.push({t:'a',m:`<strong>${comFies} aluno(s) com FIES:</strong> Acompanhar assinatura de contrato junto à CEF.`});
+  if(comProuni>0)alertas.push({t:'a',m:`<strong>${comProuni} aluno(s) com ProUni:</strong> Verificar regularização dos contratos.`});
+  if(deHoje===0)alertas.push({t:'a',m:`<strong>Nenhuma matrícula registrada hoje.</strong> Acionar equipe comercial.`});
+  const melhorDia=Object.entries(hmData).sort((a,b)=>b[1]-a[1])[0];
+  if(melhorDia)alertas.push({t:'b',m:`<strong>${melhorDia[0]}-feira é o melhor dia</strong> com ${melhorDia[1]} matrículas. Concentre campanhas neste dia.`});
+  if(total>0&&rankCons.length>0){const top=rankCons[0],pct=Math.round(top[1]/total*100);if(pct>60)alertas.push({t:'b',m:`<strong>${top[0]}</strong> responde por ${pct}% das matrículas. Considere distribuição de leads.`});}
+
+  const cores = ['#1a3a6b','#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#e2e8f0'];
+  const barCor = pctMeta>=100?'#22c55e':pctMeta>=70?'#2563eb':'#f59e0b';
+  const mediaD = diasOrd.length>0?(total/diasOrd.length).toFixed(1):0;
+
+  document.getElementById('app').innerHTML = `
+  <div class="filtros">
+    <select onchange="filtrar(this,'consultor')"><option value="">Todos os consultores</option>${consultores.map(c=>`<option>${c}</option>`).join('')}</select>
+    <select onchange="filtrar(this,'curso')"><option value="">Todos os cursos</option>${cursos.map(c=>`<option>${c}</option>`).join('')}</select>
+    <select onchange="filtrar(this,'turno')"><option value="">Todos os turnos</option>${[...new Set(dados.map(getTurno).filter(Boolean))].map(c=>`<option>${c}</option>`).join('')}</select>
+    <select onchange="filtrar(this,'ingresso')"><option value="">Todas as formas de ingresso</option>${[...new Set(dados.map(getIngresso).filter(Boolean))].map(c=>`<option>${c}</option>`).join('')}</select>
+    <select onchange="filtrar(this,'financiamento')"><option value="">Todos os financiamentos</option>${[...new Set(dados.map(getFinanciamento).filter(Boolean))].map(c=>`<option>${c}</option>`).join('')}</select>
+  </div>
+
+  <div class="section">
+    <div class="slabel">Indicadores principais</div>
+    <div class="cgrid">
+      <div class="card"><div class="clbl">Total de matrículas</div><div class="cval">${total}</div><div class="csub">Campanha 2026.2</div></div>
+      <div class="card g"><div class="clbl">Matrículas hoje</div><div class="cval">${deHoje}</div><div class="csub">${new Date().toLocaleDateString('pt-BR')}</div></div>
+      <div class="card g"><div class="clbl">Esta semana</div><div class="cval">${daSemana}</div><div class="csub up">Semana atual</div></div>
+      <div class="card"><div class="clbl">Este mês</div><div class="cval">${doMes}</div><div class="csub">${new Date().toLocaleDateString('pt-BR',{month:'long'})}</div></div>
+      <div class="card p"><div class="clbl">Consultores ativos</div><div class="cval">${consultores.length}</div><div class="csub">com matrículas</div></div>
+      <div class="card t"><div class="clbl">Cursos</div><div class="cval">${cursos.length}</div><div class="csub">com matrículas</div></div>
+      <div class="card a"><div class="clbl">Taxa de pendências</div><div class="cval">${total>0?Math.round(comDocs/total*100):0}%</div><div class="csub dn">${comDocs} alunos</div></div>
+      <div class="card r"><div class="clbl">Alunos com FIES</div><div class="cval">${comFies}</div><div class="csub">matrículas FIES</div></div>
+      <div class="card a"><div class="clbl">Alunos com ProUni</div><div class="cval">${comProuni}</div><div class="csub">matrículas ProUni</div></div>
+    </div>
+  </div>
+
+  <div class="section" style="margin-top:13px">
+    <div class="slabel">Meta da campanha — ${META_GERAL} matrículas</div>
+    <div class="panel">
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <div style="text-align:center;min-width:130px">
+          <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Atingimento</div>
+          <div style="font-size:32px;font-weight:700;color:#1a3a6b">${pctMeta}%</div>
+          <div class="gauge-bar-wrap" style="width:140px;margin:6px auto"><div class="gauge-bar" style="width:${pctMeta}%;background:${barCor}"></div></div>
+          <div style="font-size:10px;color:#94a3b8">${total} de ${META_GERAL} matrículas</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px">
+            <div style="background:#f0f9ff;border-radius:8px;padding:9px;text-align:center">
+              <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.4px">Faltam</div>
+              <div style="font-size:20px;font-weight:600;color:#1a3a6b">${Math.max(0,META_GERAL-total)}</div>
+            </div>
+            <div style="background:#f0fdf4;border-radius:8px;padding:9px;text-align:center">
+              <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.4px">Média/dia</div>
+              <div style="font-size:20px;font-weight:600;color:#16a34a">${mediaD}</div>
+            </div>
+            <div style="background:#fff7ed;border-radius:8px;padding:9px;text-align:center">
+              <div style="font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.4px">Dias ativos</div>
+              <div style="font-size:20px;font-weight:600;color:#ea580c">${diasOrd.length}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="margin-top:13px">
+    <div class="slabel">Evolução diária</div>
+    <div class="panel"><div class="chart-wrap" style="height:200px"><canvas id="cEv"></canvas></div></div>
+  </div>
+
+  <div class="tcol section" style="margin-top:13px">
+    <div class="panel">
+      <div class="ptitle">Matrículas por curso</div>
+      <div class="chart-wrap" style="height:${Math.max(160,rankCurso.length*40)}px"><canvas id="cCurso"></canvas></div>
+    </div>
+    <div>
+      <div class="panel" style="margin-bottom:11px">
+        <div class="ptitle">Forma de ingresso</div>
+        <div class="chart-wrap" style="height:${Math.max(80,rankIng.length*32)}px"><canvas id="cIng"></canvas></div>
+      </div>
+      <div class="panel" style="margin-bottom:11px">
+        <div class="ptitle">Financiamento</div>
+        <div class="chart-wrap" style="height:${Math.max(60,rankFin.length*32)}px"><canvas id="cFin"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="ptitle">Turno</div>
+        <div class="chart-wrap" style="height:${Math.max(60,rankTurno.length*32)}px"><canvas id="cTur"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="margin-top:13px">
+    <div class="slabel">Ranking de consultores</div>
+    <div class="tcol">
+      <div class="panel">
+        <div class="ptitle">Posição · matrículas · % do total</div>
+        ${rankCons.map((item,i)=>{
+          const cls=i===0?'g1':i===1?'g2':i===2?'g3':'';
+          const pct=total>0?Math.round(item[1]/total*100):0;
+          const w=rankCons[0][1]>0?Math.round(item[1]/rankCons[0][1]*100):0;
+          const dias=ultimaM[item[0]];
+          const diff=dias?Math.floor((h-dias)/(1000*60*60*24)):999;
+          const badge=diff<=1?`<span style="background:#dcfce7;color:#16a34a;font-size:9px;padding:1px 5px;border-radius:4px">Ativo ✓</span>`:
+                      diff<=3?`<span style="background:#fef9c3;color:#854d0e;font-size:9px;padding:1px 5px;border-radius:4px">${diff}d atrás</span>`:
+                      `<span style="background:#fee2e2;color:#991b1b;font-size:9px;padding:1px 5px;border-radius:4px">${diff}d sem matrícula ⚠</span>`;
+          const pctMeta2=Math.min(100,Math.round(item[1]/META_INDIVIDUAL*100));
+          return `<div class="ri">
+            <div class="rpos ${cls}">${i+1}º</div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><span class="rname">${item[0]}</span>${badge}</div>
+              <div style="font-size:9px;color:#94a3b8">Meta individual: ${pctMeta2}% de ${META_INDIVIDUAL}</div>
+            </div>
+            <div class="rbg"><div class="rb ${cls}" style="width:${w}%"></div></div>
+            <div class="rct">${item[1]}</div>
+            <div class="rpct">${pct}%</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="panel">
+        <div class="ptitle">Matrículas por consultor</div>
+        <div class="chart-wrap" style="height:${Math.max(120,rankCons.length*48)}px"><canvas id="cCons"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="margin-top:13px">
+    <div class="slabel">Indicadores operacionais</div>
+    <div class="cgrid">
+      <div class="card r"><div class="clbl">Docs pendentes</div><div class="cval">${comDocs}</div><div class="csub dn">${total>0?Math.round(comDocs/total*100):0}% das matrículas</div></div>
+      <div class="card g"><div class="clbl">Docs regularizados</div><div class="cval">${total-comDocs}</div><div class="csub up">${total>0?Math.round((total-comDocs)/total*100):0}% concluídos</div></div>
+      <div class="card a"><div class="clbl">FIES pendentes</div><div class="cval">${comFies}</div><div class="csub">aguardando contrato</div></div>
+      <div class="card a"><div class="clbl">ProUni pendentes</div><div class="cval">${comProuni}</div><div class="csub">aguardando contrato</div></div>
+    </div>
+  </div>
+
+  <div class="section" style="margin-top:13px">
+    <div class="slabel">Consultor × Curso</div>
+    <div class="panel" style="overflow-x:auto">
+      <table class="cm">
+        <thead><tr><th>Consultor</th>${cursosTop.map(c=>`<th>${c.substring(0,14)}</th>`).join('')}</tr></thead>
+        <tbody>${rankCons.map(item=>{
+          const c=item[0];
+          const vals=cursosTop.map(cur=>(cross[c]&&cross[c][cur])||0);
+          const mx=Math.max(...vals);
+          return `<tr><td>${c}</td>${vals.map(v=>v===0?`<td><span class="lo">—</span></td>`:v===mx&&v>1?`<td><span class="hi">${v}</span></td>`:`<td><span class="mid">${v}</span></td>`).join('')}</tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section" style="margin-top:13px">
+    <div class="slabel">Mapa de calor — dia da semana</div>
+    <div class="panel">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px">
+        ${diaSem.map(d=>{
+          const v=hmData[d]||0;
+          const mx=Math.max(...diaSem.map(x=>hmData[x]||0),1);
+          const pct=v/mx;
+          const bg=pct===0?'#f8fafc':pct<.25?'#eff6ff':pct<.5?'#93c5fd':pct<.75?'#2563eb':'#1a3a6b';
+          const tc=pct>=.5?'white':'#1e293b';
+          return `<div style="background:${bg};color:${tc};border-radius:8px;padding:12px 8px;text-align:center">
+            <div style="font-size:11px;font-weight:600;margin-bottom:4px">${d}</div>
+            <div style="font-size:22px;font-weight:700">${v}</div>
+            <div style="font-size:9px;opacity:.75">matrículas</div>
+          </div>`;
+        }).join('')}
+      </div>
+      ${melhorDia?`<div style="font-size:11px;color:#64748b;background:#f8fafc;border-radius:7px;padding:8px 11px">💡 <strong>${melhorDia[0]}-feira</strong> é o melhor dia com ${melhorDia[1]} matrículas. Concentre ações comerciais neste dia.</div>`:''}
+    </div>
+  </div>
+
+  <div class="section" style="margin-top:13px">
+    <div class="slabel">Alertas inteligentes</div>
+    <div class="alert-box">
+      ${alertas.length===0?'<div class="ai"><div class="adot db"></div><div>Nenhum alerta. Campanha dentro dos parâmetros normais.</div></div>':
+        alertas.map(a=>`<div class="ai"><div class="adot d${a.t}"></div><div>${a.m}</div></div>`).join('')}
+    </div>
+  </div>
+  <div style="height:24px"></div>`;
+
+  // Gráficos
+  const dO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
+  new Chart(document.getElementById('cEv'),{type:'bar',data:{labels:diasOrd,datasets:[
+    {type:'bar',label:'Diário',data:valDia,backgroundColor:'rgba(37,99,235,0.7)',borderRadius:4},
+    {type:'line',label:'Acumulado',data:acum,borderColor:'#f59e0b',backgroundColor:'transparent',tension:.4,borderDash:[4,3],pointRadius:3,yAxisID:'y2'}
+  ]},options:{...dO,plugins:{legend:{display:true,position:'top',labels:{font:{size:10},boxWidth:10}}},scales:{y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:10}}},y2:{position:'right',beginAtZero:true,grid:{display:false},ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45}}}}});
+
+  new Chart(document.getElementById('cCurso'),{type:'bar',data:{labels:rankCurso.map(x=>x[0]),datasets:[{data:rankCurso.map(x=>x[1]),backgroundColor:rankCurso.map((_,i)=>cores[i%cores.length]),borderRadius:4,indexAxis:'y'}]},options:{...dO,indexAxis:'y',scales:{x:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
+
+  new Chart(document.getElementById('cIng'),{type:'bar',data:{labels:rankIng.map(x=>x[0]),datasets:[{data:rankIng.map(x=>x[1]),backgroundColor:['#1a3a6b','#2563eb','#60a5fa','#bfdbfe'],borderRadius:3,indexAxis:'y'}]},options:{...dO,indexAxis:'y',scales:{x:{display:false},y:{ticks:{font:{size:10}}}}}});
+
+  new Chart(document.getElementById('cFin'),{type:'bar',data:{labels:rankFin.map(x=>x[0]),datasets:[{data:rankFin.map(x=>x[1]),backgroundColor:['#2563eb','#ef4444','#f59e0b','#22c55e'],borderRadius:3,indexAxis:'y'}]},options:{...dO,indexAxis:'y',scales:{x:{display:false},y:{ticks:{font:{size:10}}}}}});
+
+  new Chart(document.getElementById('cTur'),{type:'bar',data:{labels:rankTurno.map(x=>x[0]),datasets:[{data:rankTurno.map(x=>x[1]),backgroundColor:['#1a3a6b','#f59e0b','#2563eb'],borderRadius:3,indexAxis:'y'}]},options:{...dO,indexAxis:'y',scales:{x:{display:false},y:{ticks:{font:{size:10}}}}}});
+
+  new Chart(document.getElementById('cCons'),{type:'bar',data:{labels:rankCons.map(x=>x[0]),datasets:[{data:rankCons.map(x=>x[1]),backgroundColor:['#f59e0b','#94a3b8','#fb923c','#2563eb','#60a5fa'],borderRadius:4,indexAxis:'y'}]},options:{...dO,indexAxis:'y',scales:{x:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
+}
+
+const filtrosAtivos = {};
+function filtrar(sel, campo) {
+  filtrosAtivos[campo] = sel.value;
+  let dados = todosOsDados;
+  if(filtrosAtivos.consultor) dados=dados.filter(r=>getConsultor(r)===filtrosAtivos.consultor);
+  if(filtrosAtivos.curso) dados=dados.filter(r=>getCursoSimples(r)===filtrosAtivos.curso);
+  if(filtrosAtivos.turno) dados=dados.filter(r=>getTurno(r)===filtrosAtivos.turno);
+  if(filtrosAtivos.ingresso) dados=dados.filter(r=>getIngresso(r)===filtrosAtivos.ingresso);
+  if(filtrosAtivos.financiamento) dados=dados.filter(r=>getFinanciamento(r)===filtrosAtivos.financiamento);
+  renderizar(dados);
+}
+
+carregarDados();
+setInterval(carregarDados, 5*60*1000);
+</script>
+</body>
+</html>
