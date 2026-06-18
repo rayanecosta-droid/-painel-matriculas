@@ -115,8 +115,8 @@ function carregarDados() {
 
   window._jsonpCallback = function(dados) {
     todosOsDados = dados.filter(function(r) {
-      const dt = r['Coluna 1'] || r['Data/Hora'] || '';
-      return dt.toString().trim() !== '' && dt.toString().trim() !== 'Coluna 1' && dt.toString().trim() !== 'Data/Hora';
+      const dt = r['data/hora'] || '';
+      return dt.toString().trim() !== '' && dt.toString().trim().toLowerCase() !== 'data/hora';
     });
     document.getElementById('badge-txt').textContent = todosOsDados.length + ' registros';
     renderizar(todosOsDados);
@@ -188,9 +188,9 @@ function contarPor(dados, fn) {
 function renderizar(dados) {
   const h = hoje(), sw = inicioSemana(), sm = inicioMes();
   const total = dados.length;
-  const deHoje = dados.filter(r=>{const d=parseData(r['Coluna 1']||r['Data/Hora']);return d&&d.getTime()===h.getTime();}).length;
-  const daSemana = dados.filter(r=>{const d=parseData(r['Coluna 1']||r['Data/Hora']);return d&&d>=sw;}).length;
-  const doMes = dados.filter(r=>{const d=parseData(r['Coluna 1']||r['Data/Hora']);return d&&d>=sm;}).length;
+  const deHoje = dados.filter(r=>{const d=parseData(r['data/hora']);return d&&d.getTime()===h.getTime();}).length;
+  const daSemana = dados.filter(r=>{const d=parseData(r['data/hora']);return d&&d>=sw;}).length;
+  const doMes = dados.filter(r=>{const d=parseData(r['data/hora']);return d&&d>=sm;}).length;
   const comDocs = dados.filter(temDocPendente).length;
   const comFies = dados.filter(temFies).length;
   const comProuni = dados.filter(temProuni).length;
@@ -201,7 +201,7 @@ function renderizar(dados) {
   // Evolução diária
   const porDia = {};
   dados.forEach(r=>{
-    const d=parseData(r['Coluna 1']||r['Data/Hora']);
+    const d=parseData(r['data/hora']);
     if(d){const k=d.toLocaleDateString('pt-BR');porDia[k]=(porDia[k]||0)+1;}
   });
   const diasOrd = Object.keys(porDia).sort((a,b)=>{
@@ -221,14 +221,14 @@ function renderizar(dados) {
   const diaSem = ['Seg','Ter','Qua','Qui','Sex'];
   const hmData = {};
   dados.forEach(r=>{
-    const d=parseData(r['Coluna 1']||r['Data/Hora']);
+    const d=parseData(r['data/hora']);
     if(d){const ds=diaSem[d.getDay()-1];if(ds)hmData[ds]=(hmData[ds]||0)+1;}
   });
 
   // Última matrícula por consultor
   const ultimaM = {};
   dados.forEach(r=>{
-    const c=getConsultor(r), d=parseData(r['Coluna 1']||r['Data/Hora']);
+    const c=getConsultor(r), d=parseData(r['data/hora']);
     if(c&&d&&(!ultimaM[c]||d>ultimaM[c]))ultimaM[c]=d;
   });
 
