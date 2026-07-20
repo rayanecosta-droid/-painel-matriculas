@@ -115,14 +115,23 @@ function renderizarTudo() {
   if (!DADOS) return;
   const regs = registrosFiltrados();
   renderizarCards(regs);
-  renderizarFunil(regs);
   renderizarRanking("ranking-consultores", agrupar(regs, "consultor"));
   renderizarRanking("ranking-cursos", agrupar(regs, "curso"));
   renderizarRanking("ranking-cidades", agrupar(regs, "cidade"));
   renderizarRanking("ranking-origem", agrupar(regs, "tipoEscola"));
-  renderizarGraficoFinanceiro(regs);
   renderizarConsultores(regs);
   renderizarAlertas();
+  // Gráficos ficam isolados: se o Chart.js falhar por qualquer motivo
+  // (CDN fora do ar, versão errada, etc), o resto do painel continua de pé.
+  try { renderizarFunil(regs); } catch (e) { avisarFalhaGrafico("grafico-funil", e); }
+  try { renderizarGraficoFinanceiro(regs); } catch (e) { avisarFalhaGrafico("grafico-financeiro", e); }
+}
+
+function avisarFalhaGrafico(canvasId, erro) {
+  const canvas = el(canvasId);
+  if (canvas && canvas.parentElement) {
+    canvas.parentElement.innerHTML = `<p style="font-size:12px;color:var(--vermelho);">Gráfico indisponível no momento (${erro.message}). O restante do painel continua funcionando normalmente.</p>`;
+  }
 }
 
 function agrupar(regs, campo) {
