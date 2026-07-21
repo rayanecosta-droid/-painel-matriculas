@@ -19,8 +19,8 @@
 </div>
 
 <div class="tabs">
-  <div class="tab ativa" id="tab-presencial" onclick="trocarAba('presencial')">Presencial</div>
-  <div class="tab" id="tab-ead" onclick="trocarAba('ead')">EAD</div>
+  <div class="tab ativa" id="tab-presencial" onclick="trocarAba('Presencial')">Presencial</div>
+  <div class="tab" id="tab-ead" onclick="trocarAba('EAD/Semipresencial')">EAD / Semipresencial</div>
 </div>
 
 <div class="filtros">
@@ -31,16 +31,23 @@
   <select id="filtro-financeiro" onchange="renderizarTudo()"><option value="">Particular / FIES</option></select>
   <select id="filtro-status" onchange="renderizarTudo()"><option value="">Status</option></select>
   <select id="filtro-genero" onchange="renderizarTudo()"><option value="">Sexo</option></select>
+  <select id="filtro-canal" onchange="renderizarTudo()"><option value="">Como conheceu</option></select>
+  <select id="filtro-motivo" onchange="renderizarTudo()"><option value="">Motivo da escolha</option></select>
 </div>
 
 <main id="app">
+  <div id="exclusoes"></div>
+
   <div class="secao-titulo">Indicadores principais</div>
   <div class="cards-grid" id="cards"></div>
 
-  <div class="secao-titulo">Funil e distribuição financeira</div>
+  <div class="secao-titulo">Funil, financeiro e melhores dias</div>
   <div class="graficos-grid">
-    <div class="painel"><h3>Funil: leads → minuta → matrícula paga</h3><canvas id="grafico-funil"></canvas></div>
+    <div class="painel"><h3>Funil: total → minuta → matrícula paga</h3><canvas id="grafico-funil"></canvas></div>
     <div class="painel"><h3>Particular x FIES x Financiadora externa</h3><canvas id="grafico-financeiro"></canvas></div>
+  </div>
+  <div class="graficos-grid" style="margin-top:16px;">
+    <div class="painel" style="grid-column: 1 / -1;"><h3>Matrículas por dia da semana</h3><canvas id="grafico-diasemana"></canvas></div>
   </div>
 
   <div class="secao-titulo">Classificações</div>
@@ -52,15 +59,19 @@
     <div class="painel"><h3>Ranking de cidades</h3><ul class="ranking-lista" id="ranking-cidades"></ul></div>
     <div class="painel"><h3>Ranking por origem escolar</h3><ul class="ranking-lista" id="ranking-origem"></ul></div>
   </div>
+  <div class="graficos-grid" style="margin-top:16px;">
+    <div class="painel"><h3>Como o aluno conheceu a ViaSapiens</h3><ul class="ranking-lista" id="ranking-canal"></ul></div>
+    <div class="painel"><h3>Motivo da escolha</h3><ul class="ranking-lista" id="ranking-motivo"></ul></div>
+  </div>
 
   <div class="secao-titulo">Desempenho por consultor</div>
   <div class="cards-grid" id="consultores-grid"></div>
 
-  <div class="secao-titulo">Alertas de qualidade dos dados</div>
-  <div id="alertas"></div>
+  <div class="secao-titulo">Insights da campanha</div>
+  <div id="insights"></div>
 </main>
 
-<footer>Fonte única de dados: planilha "MATRÍCULAS 2026.2 (respostas)" · atualização automática a cada 5 minutos</footer>
+<footer>Fonte única de dados: planilha "MATRÍCULAS 2026.2 (respostas)" · atualização automática a cada 5 minutos · registros da consultora Valécia Carvalho ficam fora de todos os cálculos</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="config.js"></script>
