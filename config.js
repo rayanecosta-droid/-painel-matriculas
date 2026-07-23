@@ -7,7 +7,7 @@
 // Exemplo de URL: https://script.google.com/macros/s/AKfycb.../exec
 //
 const DASHBOARD_CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbxnhHFfbjBrRuXiGEsB2w_-aGEezSHVs_jZ5rXgo21tTXkS4WZ7F5-AZ_abTaYa4qs3/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycbxIrid0Sc-1SCx39jQU3Ale-RkLEAKA4ZQnYuJ7n3BQtC31cBOA1QoKgigJzfbcFQoK/exec",
 
   // Intervalo de atualização automática do dashboard, em milissegundos.
   // 300000 = 5 minutos, alinhado ao gatilho do Apps Script.
