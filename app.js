@@ -282,8 +282,9 @@ function renderizarInsights() {
   const ins = DADOS.insights;
   if (!ins) { el("insights").innerHTML = "<p>Sem dados suficientes ainda.</p>"; return; }
   const linhas = [];
+  linhas.push(`Os insights abaixo consideram Presencial e EAD/Semipresencial juntos (a soma dos dois blocos), diferente dos cards de consultor acima, que mostram só o bloco selecionado na aba.`);
   if (ins.melhorDiaSemana) linhas.push(`O dia da semana com mais matrículas é <b>${ins.melhorDiaSemana.dia}</b> (${ins.melhorDiaSemana.total} no total).`);
-  if (ins.consultorMelhorConversao) linhas.push(`<b>${ins.consultorMelhorConversao.nome}</b> tem a melhor conversão entre os consultores com pelo menos 3 matrículas: ${ins.consultorMelhorConversao.conversaoPercentual}%.`);
+  if (ins.consultorMelhorConversao) linhas.push(`<b>${ins.consultorMelhorConversao.nome}</b> tem a melhor conversão entre os consultores com pelo menos 3 matrículas, somando Presencial e EAD: ${ins.consultorMelhorConversao.conversaoPercentual}%.`);
   if (ins.consultorMaisTempoSemMatricula) linhas.push(`<b>${ins.consultorMaisTempoSemMatricula.nome}</b> é quem está há mais tempo sem fechar matrícula: ${ins.consultorMaisTempoSemMatricula.dias} dia(s).`);
   if (ins.cidadeQueMaisGeraAlunos) linhas.push(`A cidade que mais gera alunos é <b>${ins.cidadeQueMaisGeraAlunos.nome}</b> (${ins.cidadeQueMaisGeraAlunos.total}).`);
   if (ins.canalQueMaisGeraMatriculas) linhas.push(`O canal que mais gera matrículas é <b>${ins.canalQueMaisGeraMatriculas.nome}</b> (${ins.canalQueMaisGeraMatriculas.total}).`);
@@ -295,11 +296,10 @@ function renderizarInsights() {
 }
 
 function renderizarExclusoes() {
-  const excluidos = DADOS.registrosExcluidos || [];
-  if (excluidos.length === 0) { el("exclusoes").innerHTML = ""; return; }
-  el("exclusoes").innerHTML = `<div class="alerta">
-    ${excluidos.length} registro(s) lançados pela consultora Valécia Carvalho foram excluídos de todos os cálculos deste painel, porque ela não faz parte da equipe comercial atual.
-  </div>`;
+  // Mensagem de exclusão removida a pedido: os registros de consultores
+  // fora da equipe (ex: Valécia) continuam sendo excluídos dos cálculos
+  // normalmente, só não aparece mais um aviso fixo no topo do painel.
+  el("exclusoes").innerHTML = "";
 }
 
 function destruirGrafico(chave) {
